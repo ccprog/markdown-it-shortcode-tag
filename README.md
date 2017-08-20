@@ -1,6 +1,6 @@
 # markdown-it-shortcode-tag
 
-[![Build Status](https://travis-ci.org/ccprog/markdown-it-shortcode-tag?branch=master)](https://travis-ci.org/ccprog/markdown-it-shortcode-tag)
+[![Build Status](https://travis-ci.org/ccprog/markdown-it-shortcode-tag.svg?branch=master)](https://travis-ci.org/ccprog/markdown-it-shortcode-tag)
 
 With this plugin you can define shortcodes for arbitrary content to be rendered when parsing
 markdown. The shortcodes take the form of _self-closing_ HTML5 tags:
