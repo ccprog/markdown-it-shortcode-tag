@@ -1,6 +1,6 @@
 {
   "name": "markdown-it-shortcode-tag",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "shortcodes for markdown-it in HTML5 tag format",
   "keywords": [
     "markdown-it-plugin",
@@ -9,14 +9,14 @@
     "shortcode"
   ],
   "author": "Claus Colloseus <ccprog@gmx.de>",
-  "license":"SEE LICENSE",
+  "license": "SEE LICENSE",
   "repository": "ccprog/markdown-it-shortcode-tag",
   "bugs": {
     "url": "https://github.com/ccprog/markdown-it-shortcode-tag/issues"
   },
   "main": "index.js",
-  "engines" : {
-    "node" : ">=4.0" 
+  "engines": {
+    "node": ">=4.0"
   },
   "scripts": {
     "test": "tests/support/jasmine"
