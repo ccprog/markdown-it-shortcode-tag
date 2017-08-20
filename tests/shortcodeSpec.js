@@ -8,11 +8,11 @@ describe("plugin usage", function () {
         render: function (params, env) {
             var out = '<pre>\nParams:\n';
             for (var entry in params) {
-                out += entry + ': ' + params[entry] + '(' + (typeof params[entry]) + ')\n';
+                out += entry + ': ' + params[entry] + ' (' + (typeof params[entry]) + ')\n';
             }
             out += 'Env:\n';
             for (var entry in env) {
-                out += entry + ': ' + env[entry] + '(' + (typeof env[entry]) + ')\n';
+                out += entry + ': ' + env[entry] + ' (' + (typeof env[entry]) + ')\n';
             }
             out += '</pre>';
             return out;
