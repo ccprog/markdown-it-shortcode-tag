@@ -1,3 +1,5 @@
+"use strict";
+
 module.exports = function shortcode_plugin (md, shortcodes) {
 
     const defaultRuleIndex = md.block.ruler.__find__('html_block');
