@@ -7,12 +7,12 @@ describe("plugin usage", function () {
     var standard = {
         render: function (params, env) {
             var out = '<pre>\nParams:\n';
-            for (let entry in params) {
-                out += `  ${entry}: ${params[entry]} (${typeof params[entry]})\n`;
+            for (var entry in params) {
+                out += entry + ': ' + params[entry] + '(' + (typeof params[entry]) + ')\n';
             }
             out += 'Env:\n';
-            for (let entry in env) {
-                out += `  ${entry}: ${env[entry]} (${typeof env[entry]})\n`;
+            for (var entry in env) {
+                out += entry + ': ' + env[entry] + '(' + (typeof env[entry]) + ')\n';
             }
             out += '</pre>';
             return out;
