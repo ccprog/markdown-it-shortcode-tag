@@ -1,0 +1,10 @@
+#!/usr/bin/env node
+
+var Jasmine = require('jasmine');
+var jasmine = new Jasmine();
+var JasmineConsoleReporter = require('jasmine-console-reporter');
+var reporter = new JasmineConsoleReporter();
+
+jasmine.loadConfigFile('tests/support/jasmine.json');
+jasmine.addReporter(reporter);
+jasmine.execute();
