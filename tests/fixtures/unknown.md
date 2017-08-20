@@ -2,4 +2,6 @@
 
 <careless thing>
 
-still a <unknown attr>
+<unknown attr>ignore this</unknown>
+
+that is not </standard>

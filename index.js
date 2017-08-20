@@ -21,8 +21,9 @@ module.exports = function shortcode_plugin (md, shortcodes) {
     const reTag = /^<(\w+)/;
 
     function testTag (content) {
-       const blockTag = reTag.exec(content)[1];
-        return tags.find(tag => tag === blockTag);
+        const blockTag = reTag.exec(content);
+        if (!blockTag) return false;
+        return tags.find(tag => tag === blockTag[1]);
     }
 
     md.core.ruler.after('block', 'shortcode', function (state) {

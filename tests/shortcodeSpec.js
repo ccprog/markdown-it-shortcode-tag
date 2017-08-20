@@ -53,6 +53,11 @@ describe("plugin usage", function () {
             expect(result).toContain('<pre>');
             expect(result).toContain('local: test (string)');
         });
+
+        it("ignores closing tags", function () {
+            var result = md.render(source);
+            expect(result).toContain('</standard>');
+        });
     });
 
     describe("shortcode tag as inline", function () {
@@ -120,14 +125,15 @@ describe("plugin usage", function () {
         });
     });
 
-    it("ignores unknown tags", function () {
+    it("ignores unknown or closing tags", function () {
         var source = fs.readFileSync('tests/fixtures/unknown.md', {encoding: 'utf8'});
         md.use(shortcode, {standard: standard});
 
         var result = md.render(source);
         expect(result).toContain('<h1>Hello Shortcode</h1>');
         expect(result).toContain('<careless thing>');
-        expect(result).toContain('<unknown attr>');
+        expect(result).toContain('<unknown attr>ignore this</unknown>');
+        expect(result).toContain('</standard>');
         expect(result).not.toContain('<pre>');
     });
 });
