@@ -5,11 +5,14 @@ module.exports = function shortcode_plugin (md, shortcodes) {
     if (defaultRuleIndex < 0 || !shortcodes) return;
 
     const tags = Object.getOwnPropertyNames(shortcodes);
+    const inlineTags = [];
+
     if (tags.length < 1) return;
     for (const tag of tags) {
         if (typeof shortcodes[tag].render !== 'function') {
             throw new Error('missing render function for shortcode tag: ' + tag);
         }
+        if (shortcodes[tag].inline) inlineTags.push(tag);
     }
 
     const reName = '([a-zA-Z_:][a-zA-Z0-9:._-]*)';
@@ -20,13 +23,12 @@ module.exports = function shortcode_plugin (md, shortcodes) {
 
     const reTag = /^<(\w+)/;
 
-    function testTag (content) {
+    function testTag (content, tagList) {
         const blockTag = reTag.exec(content);
-        if (!blockTag) return false;
-        return tags.find(tag => tag === blockTag[1]);
+        return blockTag && tagList.find(tag => tag === blockTag[1]);
     }
 
-    md.core.ruler.after('block', 'shortcode', function (state) {
+    function rule (state) {
         let tokens = state.tokens;
 
         if (!state.md.options.html) return;
@@ -36,9 +38,7 @@ module.exports = function shortcode_plugin (md, shortcodes) {
 
             if (currentToken.type !== 'html_block') continue;
 
-            const tag = testTag(currentToken.content);
-
-            if(!tag || !shortcodes[tag].inline) continue;
+            if(!testTag(currentToken.content, inlineTags)) continue;
 
             let token, level = currentToken.level;
             const nodes = [];
@@ -59,7 +59,9 @@ module.exports = function shortcode_plugin (md, shortcodes) {
 
             state.tokens = tokens = md.utils.arrayReplaceAt(tokens, i, nodes);
         }
-    });
+    }
+
+    if (inlineTags.length > 0) md.core.ruler.after('block', 'shortcode', rule);
 
     const fallback = function(tokens, idx, options, env, self) {
         return self.renderToken(tokens, idx, options);
@@ -84,7 +86,7 @@ module.exports = function shortcode_plugin (md, shortcodes) {
             }
         }
 
-        const tag = testTag(content);
+        const tag = testTag(content, tags);
         if (tag)  {
             return shortcodes[tag].render(parameters, env);
         }
