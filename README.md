@@ -6,7 +6,7 @@ With this plugin you can define shortcodes for arbitrary content to be rendered 
 markdown. The shortcodes take the form of _self-closing_ HTML5 tags:
 
 ```html
-<custom first second="string" third=3.7>
+<custom first second="string" third=3.7 fourth={myvar} >
 ```
 
 You cannot write closing tags and consequently no inner content. Attributes are passed
@@ -42,8 +42,14 @@ var shortcodes = {
     ...]
 }
 
+var options = {
+    interpolator: function(expr, env) { ... } // resolves interpolated expression
+                                              // default interpolator simply looks up 
+                                              // expr in env
+}
+
 var md = require('markdown-it')({html: true})
-        .use(require('markdown-it-shortcode-tag'), );
+        .use(require('markdown-it-shortcode-tag'), shortcodes);
 
 
 md.render(content, env);
@@ -56,7 +62,7 @@ md.render(content, env);
     [HTML5 rules][3] for attribute syntax apply with one __caveat__: _unquoted_ attribute values
     are converted to numbers using `parseFloat()`.  
     Attributes without values are represented as boolean `true`, quoted attribute values as strings.
-  - __env__ - the enviroment variable passed to markdown-it in a `md.render(content, env)` call.
+  - __env__ - the enviroment variable passed to markdown-it in a `md.render(content, env)` call, and to the `options.interpolator(expr, env)` method.
 - __inline__ - optional, if true the shortcode is always rendered inline (surrounded by
   `<p></p>` tags), even if stands on its own separated line
 
@@ -86,7 +92,9 @@ var shortcodes = {
 var md = require('markdown-it')({html: true})
         .use(require('markdown-it-shortcode-tag'), shortcodes);
 
-console.log(md.render('<media method="img" src="assets/picture.jpg" width=400 side="left">'));
+console.log(md.render('<media method="img" src={picture} width=400 side="left">', {
+    picture: "assets/picture.jpg"
+}));
 ```
 
 Output:
@@ -95,7 +103,25 @@ Output:
 <img src="assets/picture.jpg" alt="" width="400" style="float:left">
 ```
 
-### Render an enviroment variable
+### Render an environment variable using interpolation
+
+```js
+var shortcodes = {
+    image: {
+        render: function (attrs) {
+            return '<img src="'+attrs.src+'" >';
+        }
+    }
+}
+
+var md = require('markdown-it')({html: true})
+        .use(require('markdown-it-shortcode-tag'), shortcodes);
+
+console.log(md.render('<image src={url} >', { url: "/images/img.png" }));
+// => <img src="/images/img.png" >
+```
+
+### Render an enviroment variable using shortcodes
 
 ```js
 var shortcodes = {
