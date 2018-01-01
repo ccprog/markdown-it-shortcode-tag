@@ -84,7 +84,6 @@ module.exports = function shortcode_plugin (md, shortcodes, options) {
         while (attr = reAttrs.exec(content)) {
             if (attr[4]) { //interpolated
                 let expr = attr[4].slice(1, -1).trim();
-                let interpolatedResult = interpolator(expr, env);
                 parameters[attr[1]] = interpolator(expr, env);
             } else if (attr[3]) { //quoted
                 parameters[attr[1]] = attr[3].slice(1, -1);
