@@ -38,12 +38,15 @@ describe("plugin usage", function () {
         });
 
         it("understands attributes", function () {
-            var result = md.render(source);
+            var result = md.render(source, { 
+                local: "test" 
+            });
             expect(result).toContain('<pre>');
             expect(result).toContain('first: true (boolean)');
             expect(result).toContain('second: string (string)');
             expect(result).toContain('third: other (string)');
             expect(result).toContain('fourth: 3.7 (number)');
+            expect(result).toContain('fifth: test (string)');
         });
 
         it("passes enviroment", function () {
@@ -57,6 +60,25 @@ describe("plugin usage", function () {
         it("ignores closing tags", function () {
             var result = md.render(source);
             expect(result).toContain('</standard>');
+        });
+    });
+
+    describe("options", function () {
+        var source = fs.readFileSync('tests/fixtures/block.md', {encoding: 'utf8'});
+            
+        beforeEach(function() {
+            var interpolator = function (expr, env) { 
+                return "interpolated("+ env[expr] + ")"; 
+            }
+            md.use(shortcode, {standard: standard}, { interpolator });
+        });
+
+        it("should use the interpolator option to process {expression} values", function () {
+            var result = md.render(source, {
+                local: "test"
+            });
+            
+            expect(result).toContain("fifth: interpolated(test) (string)");
         });
     });
 

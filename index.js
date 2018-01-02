@@ -1,6 +1,8 @@
 "use strict";
 
-module.exports = function shortcode_plugin (md, shortcodes) {
+module.exports = function shortcode_plugin (md, shortcodes, options) {
+    options = options || {};
+    const interpolator = options.interpolator || function (expr, env) { return env[expr]; };
     const defaultRuleIndex = md.block.ruler.__find__('html_block');
     if (defaultRuleIndex < 0 || !shortcodes) return;
 
@@ -11,12 +13,17 @@ module.exports = function shortcode_plugin (md, shortcodes) {
             throw new Error('missing render function for shortcode tag: ' + tag);
         }
     }
-
+    
     const reName = '([a-zA-Z_:][a-zA-Z0-9:._-]*)';
     const reNumber = '(-?(?:\\d*\\.\\d+|\\d+)(?:[eE]-?\\d+)?)';
     const reString = '(\'[^\']*\'|"[^"]*")';
-
-    const reAttrs = new RegExp('\\s+' + reName + '(?:\\s*=\\s*(?:' + reNumber + '|' + reString + '))?','g');
+    const reExpr = '(\\{[^}]*\\})';
+  
+    const reAttrs = new RegExp(
+        '\\s+' + reName + 
+        '(?:\\s*=\\s*(?:' + reNumber + '|' + reString + '|' + reExpr + '))?',
+        'g'
+    );
 
     const reTag = /^<(\w+)/;
 
@@ -72,10 +79,13 @@ module.exports = function shortcode_plugin (md, shortcodes) {
 
     function render (tokens, idx, options, env, self) {
         const content = tokens[idx].content;
-
+        
         let parameters = {}, attr;
         while (attr = reAttrs.exec(content)) {
-            if (attr[3]) { //quoted
+            if (attr[4]) { //interpolated
+                let expr = attr[4].slice(1, -1).trim();
+                parameters[attr[1]] = interpolator(expr, env);
+            } else if (attr[3]) { //quoted
                 parameters[attr[1]] = attr[3].slice(1, -1);
             } else if (attr[2]) { //number
                 parameters[attr[1]] = parseFloat(attr[2]);
