@@ -1,6 +1,6 @@
 {
   "name": "markdown-it-shortcode-tag",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "shortcodes for markdown-it in HTML5 tag format",
   "keywords": [
     "markdown-it-plugin",
