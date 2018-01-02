@@ -9,14 +9,18 @@ markdown. The shortcodes take the form of _self-closing_ HTML5 tags:
 <custom first second="string" third=3.7 fourth={myvar} >
 ```
 
-You cannot write closing tags and consequently no inner content. Attributes are passed
-to a rendering function you define for every tag to be interpreted:
+You cannot write closing tags and consequently no inner content. Attributes are either
+interpolated or passed directly to a rendering function you define for every tag to be
+interpreted:
 
 ```js
+const indirect = shortcodes.custom.interpolator("myvar", env)
+
 shortcodes.custom.render({
     first: true,
     second: "string",
     third: 3.7
+    fourth: indirect
 }, env)
 ```
 
@@ -43,28 +47,35 @@ var shortcodes = {
 }
 
 var options = {
-    interpolator: function(expr, env) { ... } // resolves interpolated expression
-                                              // default interpolator simply looks up 
-                                              // expr in env
+    interpolator: function(expr, env) { ... }
 }
 
 var md = require('markdown-it')({html: true})
-        .use(require('markdown-it-shortcode-tag'), shortcodes);
+        .use(require('markdown-it-shortcode-tag'), shortcodes, options);
 
 
 md.render(content, env);
 ```
 
+__shortcodes__
 - __tag__ - set a property name to identify shortcodes of the form `<tag ...>`. [HTML5 rules][2]
   for tag names apply.
 - __render__ - function that returns the rendered shortcode
   - __attrs__ - Object with name-value pairs for all attributes listed in the tag.
-    [HTML5 rules][3] for attribute syntax apply with one __caveat__: _unquoted_ attribute values
-    are converted to numbers using `parseFloat()`.  
+    [HTML5 rules][3] for attribute syntax apply with additional rules for _unquoted_ attribute values:  
+    If surrounded by curly braces, the value contains the return value of an `options.interpolator`
+    function.  
+    Other unquoted values are converted to numbers using `parseFloat()`.  
     Attributes without values are represented as boolean `true`, quoted attribute values as strings.
-  - __env__ - the enviroment variable passed to markdown-it in a `md.render(content, env)` call, and to the `options.interpolator(expr, env)` method.
+  - __env__ - the enviroment variable passed to markdown-it in a `md.render(content, env)`.
 - __inline__ - optional, if true the shortcode is always rendered inline (surrounded by
   `<p></p>` tags), even if stands on its own separated line
+
+__options__
+- __interpolator__ - optional, function that interpolates an attribute value given in curly braces.  
+  Defaults to looking up the enviroment value: `(expr, env) => env[expr]`.
+  - __expr__ - string content of the curly braces. Note that inside the braces no whitespace is allowed.
+  - __env__ - the enviroment variable passed to markdown-it in a `md.render(content, env)`.
 
 ## Examples
 
@@ -103,24 +114,6 @@ Output:
 <img src="assets/picture.jpg" alt="" width="400" style="float:left">
 ```
 
-### Render an environment variable using interpolation
-
-```js
-var shortcodes = {
-    image: {
-        render: function (attrs) {
-            return '<img src="'+attrs.src+'" >';
-        }
-    }
-}
-
-var md = require('markdown-it')({html: true})
-        .use(require('markdown-it-shortcode-tag'), shortcodes);
-
-console.log(md.render('<image src={url} >', { url: "/images/img.png" }));
-// => <img src="/images/img.png" >
-```
-
 ### Render an enviroment variable using shortcodes
 
 ```js
@@ -143,6 +136,29 @@ Output:
 
 ```html
 <h1>Hello World</h1>
+```
+
+### Render an environment variable using interpolation
+
+```js
+var shortcodes = {
+    image: {
+        render: function (attrs) {
+            return '<img src="'+attrs.src+'" >';
+        }
+    }
+}
+
+var md = require('markdown-it')({html: true})
+        .use(require('markdown-it-shortcode-tag'), shortcodes);
+
+console.log(md.render('<image src={url} >', { url: "/images/img.png" }));
+```
+
+Output:
+
+```html
+<img src="/images/img.png" >
 ```
 
 ## License
