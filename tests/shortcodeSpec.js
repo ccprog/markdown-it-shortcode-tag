@@ -47,6 +47,7 @@ describe("plugin usage", function () {
             expect(result).toContain('third: other (string)');
             expect(result).toContain('fourth: 3.7 (number)');
             expect(result).toContain('fifth: test (string)');
+            expect(result).toContain('sixth: nontest (string)');
         });
 
         it("passes enviroment", function () {
@@ -73,12 +74,13 @@ describe("plugin usage", function () {
             md.use(shortcode, {standard: standard}, { interpolator });
         });
 
-        it("should use the interpolator option to process {expression} values", function () {
+        it("should use the interpolator option to process ${expression} values", function () {
             var result = md.render(source, {
                 local: "test"
             });
             
             expect(result).toContain("fifth: interpolated(test) (string)");
+            expect(result).toContain('sixth: nontest (string)');
         });
     });
 

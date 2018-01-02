@@ -6,12 +6,12 @@ With this plugin you can define shortcodes for arbitrary content to be rendered 
 markdown. The shortcodes take the form of _self-closing_ HTML5 tags:
 
 ```html
-<custom first second="string" third=3.7 fourth={myvar} >
+<custom first second="string" third=3.7 fourth=#{myvar} >
 ```
 
 You cannot write closing tags and consequently no inner content. Attributes are either
-interpolated or passed directly to a rendering function you define for every tag to be
-interpreted:
+interpolated using a marker `#{ }` or passed directly to a rendering function you define
+for every tag to be interpreted:
 
 ```js
 const indirect = shortcodes.custom.interpolator("myvar", env)
@@ -62,20 +62,53 @@ __shortcodes__
   for tag names apply.
 - __render__ - function that returns the rendered shortcode
   - __attrs__ - Object with name-value pairs for all attributes listed in the tag.
-    [HTML5 rules][3] for attribute syntax apply with additional rules for _unquoted_ attribute values:  
-    If surrounded by curly braces, the value contains the return value of an `options.interpolator`
-    function.  
-    Other unquoted values are converted to numbers using `parseFloat()`.  
-    Attributes without values are represented as boolean `true`, quoted attribute values as strings.
+    [HTML5 rules][3] for attribute syntax apply. See below for the relation between tag attributes and
+    object property values.
   - __env__ - the enviroment variable passed to markdown-it in a `md.render(content, env)`.
 - __inline__ - optional, if true the shortcode is always rendered inline (surrounded by
   `<p></p>` tags), even if stands on its own separated line
 
 __options__
-- __interpolator__ - optional, function that interpolates an attribute value given in curly braces.  
+- __interpolator__ - optional, function that interpolates an attribute value given **unquoted**
+  and surrounded by an  interpolation marker `#{ }`.  
   Defaults to looking up the enviroment value: `(expr, env) => env[expr]`.
-  - __expr__ - string content of the curly braces. Note that inside the braces no whitespace is allowed.
+  - __expr__ - string content of the curly braces.
   - __env__ - the enviroment variable passed to markdown-it in a `md.render(content, env)`.
+
+### Translation from tag attributes to `attrs` object properties
+
+__name__  
+Attributes without values are represented as boolean `true`:
+
+    attrs.name = true
+
+__name=3.7__  
+Unquoted values are converted to numbers using `parseFloat()`:
+
+    attrs.name = 3.7
+
+__name=#{expr}__  
+Values surrounded by the interpolation marker are passed to the `options.interpolator` function:
+ 
+    attrs.name = options.interpolator("expr", env)
+
+or, if missing, to its default:
+ 
+    attrs.name = env["expr"]
+
+Note that for this syntax whitespace inside the curly braces is not allowed, as per HTML attribute
+syntax rules.
+
+__name="value"__  
+strings are copied to the property:
+ 
+    attrs.name = "value"
+
+__name="val1#{expr}val2"__  
+In strings that contain an interpolation marker `#{ }`, the marker is exchanged for the string
+value of the contained enviroment variable:
+ 
+    attrs.name = "val1" + env["expr"] + "val2"
 
 ## Examples
 
@@ -142,23 +175,36 @@ Output:
 
 ```js
 var shortcodes = {
-    image: {
+    footer: {
         render: function (attrs) {
-            return '<img src="'+attrs.src+'" >';
+            return '<footer><p>' + attrs[meta] + '</p></footer>';
         }
     }
 }
 
-var md = require('markdown-it')({html: true})
-        .use(require('markdown-it-shortcode-tag'), shortcodes);
+var options = {
+    interpolator: function (expr, env) {
+        return 'Authored by ' + env[expr].author + ' on ' +
+               Date(env[expr].date).toLocaleDateString(env.locale) + '.';
+    }
+}
 
-console.log(md.render('<image src={url} >', { url: "/images/img.png" }));
+var md = require('markdown-it')({html: true})
+        .use(require('markdown-it-shortcode-tag'), shortcodes, options);
+
+console.log(md.render('<footer meta=#{lastpost} >', {
+    lastpost: {
+        author: "Janet",
+        date: "2018-01-03"
+    },
+    locale: "en_US"
+}));
 ```
 
 Output:
 
 ```html
-<img src="/images/img.png" >
+<footer><p>Authored by Janet on 2018/3/1</p></footer>
 ```
 
 ## License

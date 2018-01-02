@@ -20,13 +20,14 @@ module.exports = function shortcode_plugin (md, shortcodes, options) {
     const reName = '([a-zA-Z_:][a-zA-Z0-9:._-]*)';
     const reNumber = '(-?(?:\\d*\\.\\d+|\\d+)(?:[eE]-?\\d+)?)';
     const reString = '(\'[^\']*\'|"[^"]*")';
-    const reExpr = '(\\{[^}]*\\})';
+    const reExpr = '(#\\{[^}]*\\})';
   
     const reAttrs = new RegExp(
         '\\s+' + reName + 
         '(?:\\s*=\\s*(?:' + reNumber + '|' + reString + '|' + reExpr + '))?',
         'g'
     );
+    const reStrExpr = new RegExp(reExpr);
 
     const reTag = /^<(\w+)/;
 
@@ -85,10 +86,14 @@ module.exports = function shortcode_plugin (md, shortcodes, options) {
         let parameters = {}, attr;
         while (attr = reAttrs.exec(content)) {
             if (attr[4]) { //interpolated
-                let expr = attr[4].slice(1, -1).trim();
+                let expr = attr[4].slice(2, -1).trim();
                 parameters[attr[1]] = interpolator(expr, env);
             } else if (attr[3]) { //quoted
-                parameters[attr[1]] = attr[3].slice(1, -1);
+                const raw = attr[3].slice(1, -1)
+                parameters[attr[1]] = raw.replace(reStrExpr, (match) => {
+                    const expr = match.slice(2, -1);
+                    return env[expr];
+                });
             } else if (attr[2]) { //number
                 parameters[attr[1]] = parseFloat(attr[2]);
             } else {
